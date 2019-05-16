@@ -8,8 +8,8 @@
 <script>
 import { debounce } from '@/utils/utils';
 import ForceGraph3D from '3d-force-graph';
-import { forceCollide, forceCenter, forceManyBody, scaleLinear } from 'd3';
-import { SpotLight, SphereBufferGeometry, MeshPhysicalMaterial, Mesh, TextureLoader, SpriteMaterial, Sprite } from 'three';
+import { forceCollide, scaleLinear } from 'd3';
+import { Group, SphereBufferGeometry, MeshPhongMaterial, Mesh } from 'three';
 
 export default {
 	name: 'live-streamer',
@@ -141,7 +141,7 @@ export default {
 			return { nodes, links };
 		},
 		destroy () {
-			if (this.graph !== null && this.graph.graphData()) {
+			if (this.graph) {
 				this.graph.graphData({ nodes: [], links: [] });
 				this.graph.renderer().forceContextLoss();
 				this.graph.scene = null;
@@ -150,12 +150,30 @@ export default {
 			}
 		},
 		handleResize () {
+			/*
 			if (this.graph.camera()) {
 				this.graph.camera().aspect = window.innerWidth / window.innerHeight;
 				this.graph.camera().updateProjectionMatrix();
 			}
 			if (this.graph.renderer()) {
 				this.graph.renderer().setSize(window.innerWidth, window.innerHeight);
+			}
+			if (this.graph) {
+				this.graph.refresh();
+			}
+			*/
+			let needsRestart = this.stream;
+
+			if (this.graph) {
+				this.$parent.stream = false;
+				window.removeEventListener('resize', this.handleResize, { passive: false });
+
+				let { nodes, links } = this.graph.graphData();
+				this.data = { nodes, links };
+				this.draw();
+				if (needsRestart) {
+					this.$parent.stream = true;
+				}
 			}
 		},
 		draw () {
@@ -169,7 +187,8 @@ export default {
 				rendererConfig: {
 					antialias: true,
 					alpha: true,
-					powerPreference: 'high-performance'
+					powerPreference: 'high-performance',
+					precision: 'lowp'
 				}
 			})(canvas)
 				.forceEngine('d3')
@@ -187,23 +206,15 @@ export default {
 					this.graph.cameraPosition({
 						x: node.x * distRatio,
 						y: node.y * distRatio,
-						z: node.z * distRatio
-					}, node, 500);
+						z: -node.z * distRatio
+					}, node, 750);
 				})
 				.onNodeHover(node => {
 					canvas.style.cursor = node ? 'pointer' : null;
-					if ((!node && !highlightNodes.length) || (highlightNodes.length === 1 && highlightNodes[0] === node)) return;
-          			highlightNodes = node ? [node] : [];
+					// if ((!node && !highlightNodes.length) || (highlightNodes.length === 1 && highlightNodes[0] === node)) return;
+          			// highlightNodes = node ? [node] : [];
 					// update geometry
 				})
-				.onLinkHover(link => {
-					canvas.style.cursor = link ? 'pointer' : null;
-					if (highlightLink === link) return;
-					highlightLink = link;
-					highlightNodes = link ? [link.source, link.target] : [];
-					// update geometry
-				})
-
 				.linkOpacity(0.8)
 				.linkDirectionalParticles(link => link === highlightLink ? 4 : 1)
         		.linkDirectionalParticleWidth(1)
@@ -226,63 +237,30 @@ export default {
 			});
 			this.graph.d3Force('charge').strength(-36).theta(0.2);
 
-			var lights = [];
-
-			let spotLight = new SpotLight(0xffffff, 1);
-			spotLight.position.set(15, 40, 35);
-			spotLight.angle = Math.PI / 4;
-			spotLight.penumbra = 0.05;
-			spotLight.decay = 2;
-			spotLight.distance = 200;
-			spotLight.castShadow = true;
-			spotLight.shadow.mapSize.width = 1024;
-			spotLight.shadow.mapSize.height = 1024;
-			spotLight.shadow.camera.near = 10;
-			spotLight.shadow.camera.far = 200;
-			lights.push(spotLight);
-
-			// lights[0] = new DirectionalLight(0xffffff, 1);
-			// lights[0].position.set(1, 0, 0).normalize();
-			// lights[1] = new DirectionalLight(0x999999, 1);
-			// lights[1].position.set(0.75, 1, 0.5);
-			// lights[2] = new DirectionalLight(0x8200C9, 1);
-			// lights[2].position.set(-0.75, -1, 0.5);
-
-			lights.forEach((l) => {
-				this.graph.scene().add(l);
-			});
-
 			window.addEventListener('resize', this.handleResize, { passive: false });
 		},
 
 		newSphere (m) {
 			let sphere = new SphereBufferGeometry(m.size, 32, 32);
-			let sphereMaterial = new MeshPhysicalMaterial({
+			let sphereMaterial = new MeshPhongMaterial({
 				color: m.color,
-				metalness: 0,
-				roughness: 0.5,
-				clearCoat: 0.8,
-				clearCoatRoughness: 0.8,
 				reflectivity: 0.8
 			});
-
-			/* let material = new MeshPhongMaterial({
-				color: m.color,
-				flatShading: FlatShading,
-				specular: 0xffffff,
-				vertexColors: VertexColors
+			/*
+			let wireframe = new SphereBufferGeometry(m.size * 1.25, 8, 8);
+			let wireframeMaterial = new MeshBasicMaterial({
+				color: '#ffffff',
+				opacity: 0.5,
+				wireframe: true,
+				transparent: true
 			});
 			*/
 			let sphereMesh = new Mesh(sphere, sphereMaterial);
-
-			if (this.useAvatars) {
-				let imgTexture = new TextureLoader().load(m.avatar);
-				let imgMaterial = new SpriteMaterial({ map: imgTexture });
-				let sprite = new Sprite(imgMaterial);
-				sprite.scale.set(12, 12);
-				sphereMesh.add(sprite);
-			}
-			return sphereMesh;
+			// let wireframeMesh = new Mesh(wireframe, wireframeMaterial);
+			var group = new Group();
+			group.add(sphereMesh);
+			// group.add(wireframeMesh);
+			return group;
 		},
 		addNodes (data) {
 			if (!this.graph || !this.graph.graphData()) return;
@@ -389,20 +367,18 @@ export default {
 }
 .node {
 	border: 2px solid white;
-	.v-avatar {
-		background: red;
-	}
 	background-color: white;
 	border-radius: 36px;
-}
-.node-label {
-	text-align: center;
-	color: black !important;
-	font-family: 'Roboto', Sans-serif !important;
-	padding: 0 12px 0 2px;
-	span {
-		position: relative;
-		top: 1px;
+	white-space: nowrap;
+	.node-label {
+		text-align: center;
+		color: black !important;
+		font-family: 'Roboto', Sans-serif !important;
+		padding: 0 12px 0 2px;
+		span {
+			position: relative;
+			top: 1px;
+		}
 	}
 }
 
