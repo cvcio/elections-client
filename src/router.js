@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-
-// import store from '@/store';
+import store from '@/store';
 
 Vue.use(Router);
 
@@ -80,7 +79,17 @@ let router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-	console.log(router.app.$session.getAll());
+	if (to.meta.requiresAuth) {
+		if (!store.state.isAuthenticated || !store.state.account) {
+			next({
+				path: '/?method=authorize',
+				query: { redirect: to.fullPath }
+			});
+		}
+		next();
+	} else {
+		next();
+	}
 	next();
 });
 

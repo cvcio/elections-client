@@ -26,6 +26,13 @@
 					<span v-if="!$vuetify.breakpoint.smAndDown">Αιτημα προσβασης</span>
 				</v-btn>
 			</div>
+			<div v-else>
+				<v-btn fab flat dark color="accent" small class="tour user-settings" to="/settings/profile">
+					<v-avatar class="grey mt-1" size="36">
+						<img :src="$store.state.account.profileImageURL" :alt="$store.state.account.firstName[0] + $store.state.account.lastName[0]"/>
+			    	</v-avatar>
+			    </v-btn>
+			</div>
 			<v-btn large round light color="primary">
 				<v-icon left dark>mdi-paypal</v-icon>
 				Donate
@@ -169,7 +176,7 @@
 										<v-btn color="accent" @click="verify">
 											Επιβεβαιωση
 										</v-btn>
-										<v-btn flat color="primary" :disabled="form.pin !== ''" @click="authorize = false">Αποστολη Κωδικου</v-btn>
+										<v-btn flat color="primary" :disabled="form.pin !== ''" @click="sendPin">Αποστολη Κωδικου</v-btn>
 									</div>
 								</v-container>
 							</v-form>
@@ -180,7 +187,7 @@
 		</v-dialog>
 
 		<v-content app>
-			<v-container fluid class="rel" fill-height>
+			<v-container fluid class="rel">
 				<v-layout row wrap>
 					<v-flex xs12>
 						<v-scroll-y-transition mode="out-in">
@@ -244,7 +251,7 @@ export default {
 	},
 	computed: {
 		isUser () {
-			return false;
+			return this.$store.state.isAuthenticated;
 		},
 		error () {
 			return this.$store.state.error;
@@ -252,7 +259,26 @@ export default {
 	},
 	created () {
 		const urlParams = new URLSearchParams(window.location.search);
-		if (urlParams && urlParams.get('provider') === 'twitter' && urlParams.get('method') === 'cb' && urlParams.get('method')) {
+		if (urlParams &&
+				urlParams.get('method') === 'authorize') {
+			this.authorize = true;
+			this.step = 1;
+			this.$router.push('/');
+		}
+		if (urlParams &&
+				urlParams.get('provider') === 'email' &&
+				urlParams.get('method') === 'invite' &&
+				urlParams.get('email')) {
+			this.authorize = true;
+			this.step = 1;
+			this.$router.push('/');
+		}
+		if (urlParams &&
+				urlParams.get('provider') === 'twitter' &&
+				urlParams.get('method') === 'create' &&
+				urlParams.get('idStr') !== '' &&
+				urlParams.get('screenName') !== '' &&
+				urlParams.get('twitterId') !== '') {
 			this.authorize = true;
 			this.step = 2;
 			this.form.userId = urlParams.get('twitterId');
@@ -260,24 +286,50 @@ export default {
 			this.form.idStr = urlParams.get('idStr');
 			this.$router.push('/');
 		}
-	},
-	mounted () {
-		this.socket = new WebSocket('ws://localhost:8000/v2/ws');
-		this.socket.onopen = () => {
-			this.socket.send('Hi!');
-			this.socket.onmessage = (data) => {
-				console.log(JSON.parse(data.data));
-			};
-		};
+		if (urlParams &&
+				urlParams.get('provider') === 'twitter' &&
+				urlParams.get('method') === 'verify' &&
+				urlParams.get('idStr') !== '' &&
+				urlParams.get('mobile') !== '') {
+			this.authorize = true;
+			this.step = 3;
+			this.form.idStr = urlParams.get('idStr');
+			this.form.mobile = urlParams.get('mobile');
+			this.$router.push('/');
+		}
+		if (urlParams &&
+				urlParams.get('provider') === 'twitter' &&
+				urlParams.get('method') === 'login' &&
+				urlParams.get('idStr') !== '' &&
+				urlParams.get('twitterAccessToken') !== '') {
+			this.login({
+				idStr: urlParams.get('idStr'),
+				twitterAccessToken: urlParams.get('twitterAccessToken')
+			});
+		}
 	},
 	methods: {
 		cancel () {},
 		exists () {},
+		login (playload) {
+			this.$http.post(`${this.$BASE_API}/v2/users/token`, playload)
+				.then((res) => {
+					window.localStorage.setItem('account', JSON.stringify(res.data.data));
+					this.$store.commit('setAuth');
+					this.authorize = false;
+					this.$router.push('/');
+				});
+		},
 		create () {
 			this.form.status = 'create';
 			if (this.$refs.formProfile.validate()) {
 				this.$http.post(`${this.$BASE_API}/v2/users`, this.form)
 					.then((res) => {
+						this.$store.commit('addError', {
+							context: 'info',
+							snackbar: true,
+							text: 'Ελέγξτε το κινητό σας για τον κωδικό επιβεβαίωσης'
+						});
 						this.step = 3;
 					});
 			}
@@ -289,8 +341,25 @@ export default {
 					idStr: this.form.idStr
 				})
 					.then((res) => {
-						console.log(res);
-						// this.step = 3;
+						this.login({
+							idStr: res.data.data.idStr,
+							twitterAccessToken: res.data.data.twitterAccessToken
+						});
+						this.authorize = false;
+					});
+			}
+		},
+		sendPin () {
+			if (this.$refs.formVerify.validate()) {
+				this.$http.post(`${this.$BASE_API}/v2/users/2fa`, {
+					idStr: this.form.idStr
+				})
+					.then((res) => {
+						this.$store.commit('addError', {
+							context: 'info',
+							snackbar: true,
+							text: 'Ο νέος κωδικός εστάλη'
+						});
 					});
 			}
 		}

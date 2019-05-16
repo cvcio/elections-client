@@ -5,7 +5,7 @@ const http = axios.create();
 http.interceptors.request.use((config) => {
 	if (config.url.indexOf('slack') > -1) return config;
 	if (window.localStorage.getItem('authorization')) {
-		config.headers['Authorization'] = window.localStorage.getItem('authorization');
+		config.headers['Authorization'] = 'Bearer ' + store.state.authToken;
 	}
 	return config;
 });
@@ -21,6 +21,7 @@ http.interceptors.response.use((response) => {
 		snackbar: true,
 		text: error.message
 	});
+
 	if (error.response.status === 401) {
 		window.localStorage.removeItem('authorization');
 		window.localStorage.removeItem('account');

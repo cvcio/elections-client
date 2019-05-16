@@ -9,8 +9,7 @@ export default new Vuex.Store({
 			? JSON.parse(window.localStorage.getItem('intro'))
 			: true,
 		isAuthenticated: !!window.localStorage.getItem('authorization') &&
-			!!JSON.parse(window.localStorage.getItem('account')) &&
-			!!window.localStorage.getItem('verified'),
+			!!JSON.parse(window.localStorage.getItem('account')),
 		authToken: window.localStorage.getItem('authorization'),
 		isVerified: !!window.localStorage.getItem('verified'),
 		account: JSON.parse(window.localStorage.getItem('account')),
@@ -46,8 +45,7 @@ export default new Vuex.Store({
 		},
 		setAuth (state) {
 			state.isAuthenticated = !!window.localStorage.getItem('authorization') &&
-				!!JSON.parse(window.localStorage.getItem('account')) &&
-				!!window.localStorage.getItem('verified');
+				!!JSON.parse(window.localStorage.getItem('account'));
 			state.authToken = window.localStorage.getItem('authorization');
 			state.account = JSON.parse(window.localStorage.getItem('account'));
 		},
