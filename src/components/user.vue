@@ -7,11 +7,6 @@
 					<v-img :src="user.profile_banner_url" class="fallback-color" aspect-ratio="2.75">
 						<v-container fill-height>
 							<v-layout>
-								<v-flex class="text-xs-left">
-									<v-btn fab small class="ma-0" @click="dialog = true">
-										<v-icon>mdi-pencil</v-icon>
-									</v-btn>
-								</v-flex>
 								<v-flex class="text-xs-right">
 									<v-btn fab small class="ma-0 elevation-1" @click="$parent.user = null;">
 										<v-icon>mdi-close</v-icon>
@@ -27,11 +22,9 @@
 
 					<v-card-title primary-title class="px-4 pb-0" justify-end>
 						<div>
-
 							<h3 class="headline mb-0">{{ user.name }}</h3>
 							<p>{{ user.description }}</p>
 						</div>
-
 					</v-card-title>
 
 					<v-card-text class="px-4 pt-0">

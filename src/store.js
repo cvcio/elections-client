@@ -13,6 +13,7 @@ export default new Vuex.Store({
 		authToken: window.localStorage.getItem('authorization'),
 		isVerified: !!window.localStorage.getItem('verified'),
 		account: JSON.parse(window.localStorage.getItem('account')),
+		fullscreen: false,
 		error: {
 			context: 'error',
 			snackbar: false,
@@ -37,6 +38,9 @@ export default new Vuex.Store({
 		},
 		error (state) {
 			return state.error;
+		},
+		fullscreen (state) {
+			return state.fullscreen;
 		}
 	},
 	mutations: {
@@ -53,8 +57,10 @@ export default new Vuex.Store({
 			state.isVerified = !!window.localStorage.getItem('verified');
 		},
 		addError (state, error) {
-			console.log(state, error);
 			state.error = error;
+		},
+		setFullscreen (state, fullscreen) {
+			state.fullscreen = fullscreen;
 		}
 	},
 	actions: {}

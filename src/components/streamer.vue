@@ -1,11 +1,12 @@
 <template>
 	<v-flex>
 		<div class="ma-0 pa-0" id="streamer"></div>
-		<user id="user" :user="user" v-if="user" class="mt-4"></user>
+
 	</v-flex>
 </template>
 
 <script>
+import Stats from 'stats-js';
 import { debounce } from '@/utils/utils';
 import ForceGraph3D from '3d-force-graph';
 import { forceCollide, scaleLinear } from 'd3';
@@ -26,7 +27,11 @@ export default {
 				links: []
 			},
 			nodes: 0,
-			camera: null
+			camera: null,
+			stats: {
+				enabled: false,
+				stats: null
+			}
 		};
 	},
 	components: {
@@ -141,6 +146,7 @@ export default {
 			return { nodes, links };
 		},
 		destroy () {
+			this.$parent.user = null;
 			if (this.graph) {
 				this.graph.graphData({ nodes: [], links: [] });
 				this.graph.renderer().forceContextLoss();
@@ -176,12 +182,21 @@ export default {
 				}
 			}
 		},
+		mesure () {
+			this.stats.stats.begin();
+			this.stats.stats.end();
+
+			requestAnimationFrame(this.mesure);
+		},
 		draw () {
 			this.destroy();
-			let canvas = document.getElementById('streamer');
+			if (this.stats.enabled) {
+				this.stats.stats = new Stats();
+				document.body.appendChild(this.stats.stats.dom);
+				requestAnimationFrame(this.mesure);
+			}
 
-			let highlightNodes = [];
-			let highlightLink = null;
+			let canvas = document.getElementById('streamer');
 
 			this.graph = ForceGraph3D({
 				rendererConfig: {
@@ -191,16 +206,13 @@ export default {
 					precision: 'lowp'
 				}
 			})(canvas)
-				.forceEngine('d3')
 				.nodeLabel('label')
 				.nodeId('id')
 				.nodeVal('size')
-				.nodeOpacity(1)
 				.nodeThreeObject(this.newSphere)
 				.enableNodeDrag(false)
-				.nodeColor(node => highlightNodes.indexOf(node) === -1 ? 'rgba(0,255,255,0.6)' : 'rgb(255,0,0,1)')
 				.onNodeClick(node => {
-					this.user = node.t;
+					this.$parent.user = node.t;
 					const distance = 350;
 					const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
 					this.graph.cameraPosition({
@@ -211,37 +223,36 @@ export default {
 				})
 				.onNodeHover(node => {
 					canvas.style.cursor = node ? 'pointer' : null;
-					// if ((!node && !highlightNodes.length) || (highlightNodes.length === 1 && highlightNodes[0] === node)) return;
-          			// highlightNodes = node ? [node] : [];
-					// update geometry
 				})
 				.linkOpacity(0.8)
-				.linkDirectionalParticles(link => link === highlightLink ? 4 : 1)
+				.linkDirectionalParticles(1)
         		.linkDirectionalParticleWidth(1)
 				.linkDirectionalParticleSpeed(0.06)
 				.linkWidth(0)
 				.linkCurvature(0.02)
 				// .d3VelocityDecay(0.3)
-				// .warmupTicks(0)
-				.cooldownTime(30000)
+				// .warmupTicks(2)
+				// .cooldownTime(30000)
 				.showNavInfo(false)
 				.cameraPosition({ z: 2000 })
 				.width(window.innerWidth)
 				.height(window.innerHeight)
 				.backgroundColor(this.backgroundColor)
 				.graphData(this.data);
-
+			/*
 			this.graph.d3Force('collision', forceCollide(node => Math.cbrt(node.size) * 2));
 			this.graph.d3Force('link').distance((link) => {
 				return Math.ceil(link.source.size + link.target.size) * 2;
 			});
 			this.graph.d3Force('charge').strength(-36).theta(0.2);
-
+			*/
 			window.addEventListener('resize', this.handleResize, { passive: false });
 		},
 
 		newSphere (m) {
-			let sphere = new SphereBufferGeometry(m.size, 32, 32);
+			let scale = scaleLinear().domain([2, 16]).range([8, 24]);
+			let segments = Math.ceil(scale(m.size));
+			let sphere = new SphereBufferGeometry(m.size, segments, segments);
 			let sphereMaterial = new MeshPhongMaterial({
 				color: m.color,
 				reflectivity: 0.8
@@ -293,6 +304,8 @@ export default {
 		resume () {
 			if (!this.graph || !this.graph.graphData()) return;
 			this.graph.resumeAnimation();
+			// Re-heat simulation
+			this.graph.numDimensions(3);
 		},
 		clear () {
 			this.graph.graphData({ nodes: [], links: [] });
@@ -360,10 +373,9 @@ export default {
 	left: 0;
 
 	background: #fafafa; /* Old browsers */
-	background: -moz-linear-gradient(top, #f3f3f3 0%, #e0e0e0 100%); /* FF3.6-15 */
-	background: -webkit-linear-gradient(top, #f3f3f3 0% ,#e0e0e0 100%); /* Chrome10-25,Safari5.1-6 */
-	background: linear-gradient(to bottom, #f3f3f3 0%, #e0e0e0 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f3f3f3', endColorstr='#e0e0e0',GradientType=0 ); /* IE6-9 */
+	background: -moz-linear-gradient(#fafafa 0%, #fafafa 60%, #d0d0d0 100%);
+	background: -webkit-linear-gradient(#fafafa 0%, #fafafa 60%, #d0d0d0 100%);
+	background: linear-gradient(#fafafa 0%, #fafafa 60%, #d0d0d0 100%);
 }
 .node {
 	border: 2px solid white;

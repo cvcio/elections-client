@@ -1,15 +1,16 @@
 <template>
-	<v-container fill-height fluid>
+	<v-container fill-height :fluid="!$store.state.isIntro">
 		<v-layout :align-center="$store.state.isIntro">
-			<live-introduction class="live-introductionr"></live-introduction>
+			<live-introduction v-if="$store.state.isIntro" class="live-introduction"></live-introduction>
 			<live-streamer class="live-streamer" :stream="stream" :animate="animate" ref="streamer"></live-streamer>
+			<user id="user" :user="user" v-if="user && !$store.state.isIntro" class="mt-4"></user>
 
 			<v-layout class="view-actions pa-0 ma-0" v-if="!$store.state.isIntro" column fill-height align-center justify-center>
-				<v-tooltip bottom>
+				<v-tooltip left>
 					<template v-slot:activator="{ on }">
 						<v-btn
 							@click="stream = !stream;"
-							:color="stream ? 'secondary lighten-1' : 'primary'"
+							:color="stream ? 'secondary lighten-2' : 'secondary'"
 							fab
 							dark
 							small
@@ -19,11 +20,11 @@
 					</template>
 					<span>{{!stream ? 'Start' : 'Stop'}} Streaming</span>
 				</v-tooltip>
-				<v-tooltip bottom>
+				<v-tooltip left>
 					<template v-slot:activator="{ on }">
 						<v-btn
 							@click="animate = !animate;"
-							:color="animate ? 'secondary lighten-1' : 'primary'"
+							:color="animate ? 'secondary lighten-2' : 'secondary'"
 							fab
 							dark
 							small
@@ -33,11 +34,11 @@
 					</template>
 					<span>{{!animate ? 'Unlock' : 'Lock'}} Animation</span>
 				</v-tooltip>
-				<v-tooltip bottom>
+				<v-tooltip left>
 					<template v-slot:activator="{ on }">
 						<v-btn
 							@click="$refs.streamer.recenter"
-							color="secondary lighten-1"
+							color="secondary lighten-2"
 							fab
 							dark
 							small
@@ -47,16 +48,31 @@
 					</template>
 					<span>Reset Camera Position</span>
 				</v-tooltip>
-				<v-tooltip bottom>
+				<v-tooltip left>
 					<template v-slot:activator="{ on }">
 						<v-btn
-							@click="$refs.streamer.clear()"
-							color="secondary lighten-1"
+							@click="$store.commit('setFullscreen', !$store.state.fullscreen)"
+							:color="!$store.state.fullscreen ? 'secondary lighten-2' : 'secondary'"
 							fab
 							dark
 							small
 							class="mx-2" v-on="on">
-							<v-icon>mdi-refresh</v-icon>
+							<v-icon>{{$store.state.fullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'}}</v-icon>
+						</v-btn>
+					</template>
+					<span>Presentation Mode</span>
+				</v-tooltip>
+				<v-divider class="short-divider my-3 grey lighten-1"></v-divider>
+				<v-tooltip left>
+					<template v-slot:activator="{ on }">
+						<v-btn
+							@click="$refs.streamer.clear()"
+							color="primary lighten-1"
+							fab
+							dark
+							small
+							class="mx-2" v-on="on">
+							<v-icon>mdi-delete-outline</v-icon>
 						</v-btn>
 					</template>
 					<span>Clear Network</span>
@@ -74,18 +90,21 @@ export default {
 			name: 'live',
 			stream: true,
 			reset: true,
-			animate: true
+			fullscreen: false,
+			animate: true,
+			user: null
 		};
 	},
 	components: {
 		'live-introduction': require('@/components/introduction').default,
-		'live-streamer': require('@/components/streamer').default
+		'live-streamer': require('@/components/streamer').default,
+		'user': require('@/components/user').default
 	}
 };
 </script>
 
 <style lang="less">
-.live-introductionr {
+.live-introduction {
 	z-index: 1;
 }
 .live-streamer {

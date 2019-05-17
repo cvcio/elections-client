@@ -24,56 +24,19 @@ let router = new Router({
 			component: () => import(/* webpackChunkName: "live" */ './views/live/index.vue')
 		},
 		{
-			path: '/live/tweet/:id',
-			component: () => import(/* webpackChunkName: "live" */ './views/live/index.vue')
-		},
-		{
-			path: '/live/account/:id',
-			component: () => import(/* webpackChunkName: "live" */ './views/live/index.vue')
-		},
-		{
-			path: '/live/cluster/:id',
-			component: () => import(/* webpackChunkName: "live" */ './views/live/index.vue')
-		},
-		{
-			path: '/live/user/:id',
-			component: () => import(/* webpackChunkName: "live" */ './views/live/index.vue')
-		},
-		{
-			path: '/metrics',
-			component: () => import(/* webpackChunkName: "metrics" */ './views/Metrics.vue')
-		},
-		{
-			path: '/users',
-			component: () => import(/* webpackChunkName: "users" */ './views/Users.vue')
-		},
-		{
-			path: '/users/:id',
-			component: () => import(/* webpackChunkName: "users" */ './views/Users.vue')
-		},
-		{
-			path: '/account',
-			component: () => import(/* webpackChunkName: "account" */ './views/Account.vue')
-		},
-		{
-			path: '/account/tweets',
-			component: () => import(/* webpackChunkName: "account" */ './views/Account.vue')
-		},
-		{
 			path: '/about',
-			component: () => import(/* webpackChunkName: "about" */ './views/About.vue')
+			component: () => import(/* webpackChunkName: "about" */ './views/static/about.vue')
 		},
 		{
 			path: '/legal',
-			component: () => import(/* webpackChunkName: "legal" */ './views/Legal.vue')
-		},
-		{
-			path: '/donate',
-			component: () => import(/* webpackChunkName: "donate" */ './views/Donate.vue')
+			component: () => import(/* webpackChunkName: "legal" */ './views/static/legal.vue')
 		},
 		{
 			path: '/classifier',
-			component: () => import(/* webpackChunkName: "classifier" */ './views/Classifier.vue')
+			component: () => import(/* webpackChunkName: "classifier" */ './views/classifier/index.vue'),
+			meta: {
+				requiresAuth: true
+			}
 		}
 	]
 });
