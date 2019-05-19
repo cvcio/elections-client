@@ -1,29 +1,31 @@
 <template>
 	<v-app id="app" light toolbar footer>
+
 		<v-toolbar :inverted-scroll="$store.state.fullscreen" app color="white" flat height="72">
 			<v-btn left flat small icon to="/" v-if="$route.path !== '/'">
 				<v-icon size="16">mdi-arrow-left</v-icon>
 			</v-btn>
 			<v-toolbar-title>
 				<router-link to="/">
-					<span class="grey--text" to="/">MediaWatch</span>
+					<span class="mt-1 grey--text" to="/">MediaWatch</span>
 				</router-link>
 			</v-toolbar-title>
-			<v-divider inset vertical class="mx-3"></v-divider>
-			<span class="subheading font-weight-bold">Ευρωεκλογές 2019</span>
+			<v-divider inset vertical class="mx-3" v-if="$vuetify.breakpoint.mdAndUp"></v-divider>
+			<span class="subheading font-weight-bold mt-1" v-if="$vuetify.breakpoint.mdAndUp">Ευρωεκλογές 2019</span>
+			<span class="subheading font-weight-bold mt-1 ml-1" v-else>EU2019</span>
 
 			<v-spacer></v-spacer>
 
 			<div v-if="!isUser">
 				<span class="grey--text">
 					<v-btn flat small round :icon="$vuetify.breakpoint.smAndDown" class="grey--text text-none" to="/about">
-						<span v-if="!$vuetify.breakpoint.smAndDown">Είστε Δημοσιογράφος</span>
-						<v-icon :right="!$vuetify.breakpoint.smAndDown" small>mdi-help-circle</v-icon>
+						<span v-if="$vuetify.breakpoint.mdAndUp">Είστε Δημοσιογράφος</span>
+						<v-icon :right="$vuetify.breakpoint.mdAndUp" small>mdi-help-circle</v-icon>
 					</v-btn>
 				</span>
-				<v-btn large flat round light color="accent" :icon="$vuetify.breakpoint.smAndDown" @click="$refs.authorize.authorize = true">
-					<v-icon :left="!$vuetify.breakpoint.smAndDown" dark color="#38A1F3">mdi-twitter</v-icon>
-					<span v-if="!$vuetify.breakpoint.smAndDown">Αιτημα προσβασης</span>
+				<v-btn :large="$vuetify.breakpoint.mdAndUp" flat round light color="accent" :icon="$vuetify.breakpoint.smAndDown" @click="$refs.authorize.authorize = true">
+					<v-icon :left="$vuetify.breakpoint.mdAndUp" dark color="#38A1F3">mdi-twitter</v-icon>
+					<span v-if="$vuetify.breakpoint.mdAndUp">Αιτημα προσβασης</span>
 				</v-btn>
 			</div>
 			<div v-else>
@@ -37,14 +39,14 @@
 			<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" class="ma-0 pa-0">
 				<input type="hidden" name="cmd" value="_s-xclick" />
 				<input type="hidden" name="hosted_button_id" value="88FQHKKEJ8WQA" />
-				<v-btn large round light color="primary" type="submit">
-					<v-icon left dark>mdi-paypal</v-icon>
-					Donate
+				<v-btn :large="$vuetify.breakpoint.mdAndUp" :round="$vuetify.breakpoint.mdAndUp" :fab="$vuetify.breakpoint.smAndDown" :small="$vuetify.breakpoint.smAndDown" light color="primary" type="submit">
+					<v-icon :left="$vuetify.breakpoint.mdAndUp" dark>mdi-paypal</v-icon>
+					<span v-if="$vuetify.breakpoint.mdAndUp">Donate</span>
 				</v-btn>
 			</form>
 		</v-toolbar>
 
-		<authorize ref="authorize"></authorize>
+		<authorize ref="authorize" :urlParams="urlParams"></authorize>
 
 		<v-content app>
 			<v-container fluid fill-height class="rel">
@@ -58,19 +60,13 @@
 			</v-container>
 		</v-content>
 
-		<v-snackbar :multi-line="false" :color="error.context" v-model="error.snackbar" bottom :timeout=12000>
+		<v-snackbar :multi-line="true" :color="error.context" v-model="error.snackbar" bottom :timeout="20000">
 			{{ error.text }}
 			<v-btn dark flat @click.native="error.snackbar = false">CLOSE</v-btn>
 		</v-snackbar>
 
-		<v-footer absolute app v-if="!$store.state.fullscreen" color="transparent" class="pa-4" height="auto">
-			<span class="">Copyright &copy; {{ new Date().getFullYear() }} Civic Information Office</span>
-			<v-btn flat class="text-none" to="/about">Διαβάστε Περισσότερα</v-btn>
-			<v-spacer></v-spacer>
-			<v-btn href="mailto:press@mediawatch.io" flat class="text-none grey--text">Contact</v-btn>
-			<v-btn to="/legal" flat class="text-none grey--text">Terms &amp; Privacy</v-btn>
-			<v-btn to="/legal" flat class="text-none grey--text">Code of Conduct</v-btn>
-		</v-footer>
+		<foot></foot>
+
 	</v-app>
 </template>
 
@@ -78,7 +74,8 @@
 export default {
 	name: 'elections',
 	components: {
-		'authorize': require('@/components/authorize').default
+		'authorize': require('@/components/authorize').default,
+		'foot': require('@/components/footer').default
 	},
 	computed: {
 		isUser () {
@@ -86,6 +83,9 @@ export default {
 		},
 		error () {
 			return this.$store.state.error;
+		},
+		urlParams () {
+			return window.location.search;
 		}
 	}
 };
@@ -116,6 +116,11 @@ h1, h2, h3, h4, h5, h6 {
 .short-divider {
     width: 72px;
     border-color: #24242d !important;
+}
+
+.cc {
+	top: -1px;
+	position: relative;
 }
 
 </style>

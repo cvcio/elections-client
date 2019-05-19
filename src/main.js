@@ -1,6 +1,4 @@
 import Vue from 'vue';
-import VueSession from 'vue-session';
-import VueCookies from 'vue-cookies';
 
 import App from '@/App.vue';
 import router from '@/router';
@@ -13,20 +11,14 @@ import _ from 'lodash';
 import '@/plugins/vuetify';
 import '@/registerServiceWorker';
 
-Vue.use(VueSession, {
-	persist: true
-});
-
-Vue.use(VueCookies);
-
 Vue.config.productionTip = false;
 
 Vue.prototype.$http = http;
 Vue.prototype.$moment = moment;
 Vue.prototype.$_ = _;
-Vue.prototype.$BASE_API = process.env.VUE_APP_BASE_API || '';
+Vue.prototype.$BASE_API = process.env.VUE_APP_BASE_API || 'https://api.elections.mediawatch.io';
+Vue.prototype.$SOCKET = process.env.VUE_APP_SOCKET || 'wss://api.elections.mediawatch.io/v2/ws';
 Vue.prototype.$VERSION = require('../package.json').version;
-Vue.prototype.$DOMAINNAME = process.env.VUE_APP_DOMAINNAME || 'EU Elections 2019';
 
 // eslint-disable-next-line
 new Vue({

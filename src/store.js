@@ -18,6 +18,11 @@ export default new Vuex.Store({
 			context: 'error',
 			snackbar: false,
 			text: ''
+		},
+		selectedUser: null,
+		cachedGraph: {
+			nodes: [],
+			links: []
 		}
 	},
 	getters: {
@@ -41,6 +46,12 @@ export default new Vuex.Store({
 		},
 		fullscreen (state) {
 			return state.fullscreen;
+		},
+		selectedUser (state) {
+			return state.selectedUser;
+		},
+		cachedGraph (state) {
+			return state.cachedGraph;
 		}
 	},
 	mutations: {
@@ -61,6 +72,29 @@ export default new Vuex.Store({
 		},
 		setFullscreen (state, fullscreen) {
 			state.fullscreen = fullscreen;
+		},
+		setSelectedUser (state, selectedUser) {
+			if (selectedUser) {
+				console.debug(
+					[
+						selectedUser.metrics.followers || 0,
+						selectedUser.metrics.friends || 0,
+						selectedUser.metrics.statuses || 0,
+						selectedUser.metrics.favorites || 0,
+						selectedUser.metrics.lists || 0,
+						selectedUser.metrics.friends > 0
+							? selectedUser.metrics.followers / (selectedUser.metrics.friends)
+							: selectedUser.metrics.followers,
+						selectedUser.metrics.favorites > 0
+							? selectedUser.metrics.statuses / (selectedUser.metrics.favorites)
+							: selectedUser.metrics.statuses
+					].join(',')
+				);
+			}
+			state.selectedUser = selectedUser;
+		},
+		saveGraph (state, cachedGraph) {
+			state.cachedGraph = cachedGraph;
 		}
 	},
 	actions: {}
