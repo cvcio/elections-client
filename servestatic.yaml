@@ -1,0 +1,5 @@
+name: elections-mediawatch-app
+env: production
+html-paths:
+    serve: /usr/src/app/dist
+    static: static

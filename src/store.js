@@ -13,10 +13,16 @@ export default new Vuex.Store({
 		authToken: window.localStorage.getItem('authorization'),
 		isVerified: !!window.localStorage.getItem('verified'),
 		account: JSON.parse(window.localStorage.getItem('account')),
+		fullscreen: false,
 		error: {
 			context: 'error',
 			snackbar: false,
 			text: ''
+		},
+		selectedUser: null,
+		cachedGraph: {
+			nodes: [],
+			links: []
 		}
 	},
 	getters: {
@@ -37,6 +43,15 @@ export default new Vuex.Store({
 		},
 		error (state) {
 			return state.error;
+		},
+		fullscreen (state) {
+			return state.fullscreen;
+		},
+		selectedUser (state) {
+			return state.selectedUser;
+		},
+		cachedGraph (state) {
+			return state.cachedGraph;
 		}
 	},
 	mutations: {
@@ -53,8 +68,33 @@ export default new Vuex.Store({
 			state.isVerified = !!window.localStorage.getItem('verified');
 		},
 		addError (state, error) {
-			console.log(state, error);
 			state.error = error;
+		},
+		setFullscreen (state, fullscreen) {
+			state.fullscreen = fullscreen;
+		},
+		setSelectedUser (state, selectedUser) {
+			if (selectedUser) {
+				console.debug(
+					[
+						selectedUser.metrics.followers || 0,
+						selectedUser.metrics.friends || 0,
+						selectedUser.metrics.statuses || 0,
+						selectedUser.metrics.favorites || 0,
+						selectedUser.metrics.lists || 0,
+						selectedUser.metrics.friends > 0
+							? selectedUser.metrics.followers / (selectedUser.metrics.friends)
+							: selectedUser.metrics.followers,
+						selectedUser.metrics.favorites > 0
+							? selectedUser.metrics.statuses / (selectedUser.metrics.favorites)
+							: selectedUser.metrics.statuses
+					].join(',')
+				);
+			}
+			state.selectedUser = selectedUser;
+		},
+		saveGraph (state, cachedGraph) {
+			state.cachedGraph = cachedGraph;
 		}
 	},
 	actions: {}

@@ -98,7 +98,7 @@ export default {
 	},
 	methods: {
 		save () {
-			this.$http.post(`${this.$BASE_API}/v2/annotate`, {
+			this.$http.post(`/v2/annotate`, {
 				annotatorIdStr: this.$store.state.account.idStr,
 				annotatorScreenName: this.$store.state.account.screenName,
 				userIdStr: this.user.id_str,

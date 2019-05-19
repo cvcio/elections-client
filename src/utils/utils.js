@@ -67,8 +67,52 @@ function debounce (func, wait, immediate) {
 	};
 };
 
+const nodeColor = (t) => {
+	switch (t) {
+	case 'INFLUENCER':
+		return '#76ff03';
+	case 'ACTIVE':
+		return '#00b0ff';
+	case 'AMPLIFIER':
+		return '#ff1744';
+	case 'OTHER':
+	case 'UNKNOWN':
+		return '#757575';
+	case 'NEW':
+		return '#ffd600';
+	default:
+		return '#00b0ff';
+	}
+};
+
+const linkColor = (t) => {
+	switch (t.toLowerCase()) {
+	case 'tweet':
+	case 'tweets':
+		return '#00b0ff';
+	case 'retweet':
+	case 'retweets':
+		return '#76ff03';
+	case 'quote':
+	case 'quotes':
+		return '#F4511E';
+	case 'reply':
+	case 'replies':
+		return '#19CF86';
+	default:
+		return '#cccccc';
+	}
+};
+
+const thousands = (num) => {
+	return Math.abs(num) > 999 ? Math.sign(num) * ((Math.abs(num) / 1000).toFixed(1)) + 'K' : Math.sign(num) * Math.abs(num);
+};
+
 export {
 	filterSelector,
 	ellipsis,
-	debounce
+	debounce,
+	nodeColor,
+	linkColor,
+	thousands
 };
