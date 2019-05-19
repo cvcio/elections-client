@@ -1,6 +1,8 @@
 import axios from 'axios';
 import store from '@/store';
-const http = axios.create();
+const http = axios.create({
+	baseURL: process.env.VUE_APP_BASE_API
+});
 // Add a request interceptor
 http.interceptors.request.use((config) => {
 	if (config.url.indexOf('slack') > -1) return config;
