@@ -17,7 +17,7 @@
 									<h4 class="">MediaWatch Ευρωεκλογές 2019 &mdash; Αίτημα πρόσβασης</h4>
 									<p class="my-3">Η συγκεκριμένη λειτουργία της πλατφόρμας απευθύνεται <strong>μόνο</strong> σε Δημοσιογράφους. Παρακαλούμε πριν συνεχίσετε βεβαιωθείτε ότι διαβάσατε τους <router-link to="/legal">Όρους Χρήσης</router-link> καθώς και τον <router-link to="/legal">Κώδικα Ηθικής</router-link> τους οποίους θα κληθείτε να αποδεχθείτε στο επόμενο στάδιο.</p>
 									<div class="text-xs-center">
-										<v-btn color="#38A1F3" dark href="http://localhost:8000/api/auth/twitter">
+										<v-btn color="#38A1F3" dark :href="this.$BASE_API + '/api/auth/twitter'">
 											<v-icon left dark>mdi-twitter</v-icon>
 											Αιτημα προσβασης
 										</v-btn>
@@ -150,6 +150,7 @@
 <script>
 export default {
 	name: 'authorize',
+	props: ['urlParams'],
 	data () {
 		return {
 			authorize: false,
@@ -191,7 +192,7 @@ export default {
 		}
 	},
 	created () {
-		const urlParams = new URLSearchParams(window.location.search);
+		const urlParams = new URLSearchParams(this.urlParams);
 		if (urlParams &&
 				urlParams.get('method') === 'authorize') {
 			this.authorize = true;
@@ -244,8 +245,16 @@ export default {
 	methods: {
 		cancel () {},
 		login (playload) {
-			this.$http.post(`${this.$BASE_API}/v2/users/token`, playload)
+			this.$http.post(`/v2/users/token`, playload)
 				.then((res) => {
+					if (res.data.data.status !== 'active') {
+						this.$store.commit('addError', {
+							context: 'info',
+							snackbar: true,
+							text: 'Ο λογαριασμός δεν είναι διαθέσιμος μέχρι να επιβεβαιώσουμε τα στοιχεία σας'
+						});
+						return;
+					}
 					window.localStorage.setItem('account', JSON.stringify(res.data.data));
 					this.$store.commit('setAuth');
 					this.authorize = false;
@@ -255,7 +264,7 @@ export default {
 		create () {
 			this.form.status = 'create';
 			if (this.$refs.formProfile.validate()) {
-				this.$http.post(`${this.$BASE_API}/v2/users`, this.form)
+				this.$http.post(`/v2/users`, this.form)
 					.then((res) => {
 						this.$store.commit('addError', {
 							context: 'info',
@@ -268,7 +277,7 @@ export default {
 		},
 		verify () {
 			if (this.$refs.formVerify.validate()) {
-				this.$http.post(`${this.$BASE_API}/v2/users/verify`, {
+				this.$http.post(`/v2/users/verify`, {
 					pin: this.form.pin,
 					idStr: this.form.idStr
 				})
@@ -283,7 +292,7 @@ export default {
 		},
 		sendPin () {
 			if (this.$refs.formVerify.validate()) {
-				this.$http.post(`${this.$BASE_API}/v2/users/2fa`, {
+				this.$http.post(`/v2/users/2fa`, {
 					idStr: this.form.idStr
 				})
 					.then((res) => {

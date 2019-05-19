@@ -1,55 +1,110 @@
 <template>
 	<v-container fluid>
-		<classify :user="user" :dialog="dialog"></classify>
 		<v-layout row>
 			<v-flex xs12 sm4>
-				<v-card max-width="480px">
+				<v-card max-width="480px" v-if="user">
 					<v-img :src="user.profile_banner_url" class="fallback-color" aspect-ratio="2.75">
 						<v-container fill-height>
 							<v-layout>
 								<v-flex class="text-xs-right">
-									<v-btn fab small class="ma-0 elevation-1" @click="$parent.user = null;">
+									<v-btn fab small class="ma-0 elevation-1" @click="$store.commit('setSelectedUser', null)">
 										<v-icon>mdi-close</v-icon>
 									</v-btn>
 								</v-flex>
 							</v-layout>
-							<v-chip small class="badge mx-0 my-4" label>
+							<v-chip small class="badge mx-0 my-4" :color="nodeColor(label)" :dark="label !== 'NEW' && label !== 'INFLUENCER'" label>
 								<span class="font-weight-bold">{{ label }}</span>
-								<span class="ml-1 font-weight-normal">{{ (score*100).toFixed(2) }}%</span>
+								<span class="ml-1 font-weight-normal">{{ label !== 'NEW' ? (score*100).toFixed(2) + '%' : '' }}</span>
 							</v-chip>
 						</v-container>
 					</v-img>
 
 					<v-card-title primary-title class="px-4 pb-0" justify-end>
 						<div>
-							<h3 class="headline mb-0">{{ user.name }}</h3>
+							<h3 class="headline mb-1">
+								{{ user.name }}
+								<v-chip small class="mx-0 my-0" label>
+									<span class="font-weight-bold">{{ thousands(user.metrics.dates.toFixed()) }} ημέρ{{user.metrics.dates > 0 ? 'ες' : 'α'}} ενεργός</span>
+								</v-chip>
+							</h3>
 							<p>{{ user.description }}</p>
 						</div>
 					</v-card-title>
 
-					<v-card-text class="px-4 pt-0">
-						<p>
-							User
-							<strong>{{user.screen_name}}</strong> joined Twitter on
-							<strong>{{$moment(Date.parse(user.created_at)).format('LL')}} ({{ user.metrics.dates.toFixed() }} day{{user.metrics.dates.toFixed() > 1 ? 's' : ''}})</strong>.
-							Has <strong>{{user.metrics.followers}}</strong> followers,
-							<strong>{{user.metrics.friends}}</strong> friends,
-							<strong>{{user.metrics.statuses}}</strong> statuses,
-							<strong>{{user.metrics.favourites}}</strong> favorites, <strong>{{
-								user.metrics.friends > 0 ? (user.metrics.followers / user.metrics.friends).toFixed(2) : 0
-							}}</strong>
-							FFR Ratio, is a member in
-							<strong>{{user.metrics.listed}}</strong> list{{user.metrics.listed > 1 ? 's' : ''}} and has an average of
-							<strong>{{user.metrics.actions.toFixed(2)}}</strong> actions / day.
-						</p>
+					<v-card-text class="px-4 py-0">
+						<v-layout row justify-start wrap class="mb-3">
+							<v-flex class="mt-1">
+								<h3 class="caption grey--text">Tweets</h3>
+								<h3>{{thousands(user.metrics.statuses) || 0}}</h3>
+							</v-flex>
+							<v-flex class="mt-1">
+								<h3 class="caption grey--text">Following</h3>
+								<h3>{{thousands(user.metrics.friends) || 0}}</h3>
+							</v-flex>
+							<v-flex class="mt-1">
+								<h3 class="caption grey--text">Followers</h3>
+								<h3>{{thousands(user.metrics.followers) || 0}}</h3>
+							</v-flex>
+							<v-flex class="mt-1">
+								<h3 class="caption grey--text">Likes</h3>
+								<h3>{{thousands(user.metrics.favorites) || 0}}</h3>
+							</v-flex>
+							<v-flex class="mt-1">
+								<h3 class="caption grey--text">Lists</h3>
+								<h3>{{thousands(user.metrics.listed) || 0}}</h3>
+							</v-flex>
+							<v-flex class="mt-1">
+								<h3 class="caption grey--text">
+									FFR
+									<v-tooltip bottom class="tooltip-info">
+										<template v-slot:activator="{ on }">
+											<v-icon small v-on="on">mdi-information</v-icon>
+										</template>
+										<span>Followers / Friends Ratio</span>
+									</v-tooltip>
+								</h3>
 
-						<v-layout column>
-							<span class="caption font-weight-bold">ΔΡΑΣΤΗΡΙΟΤΗΤΑ ΛΟΓΑΡΙΑΣΜΟΥ</span>
-							<v-flex xs12 id="chart" class="my-2">
+								<h3>{{user.metrics.friends > 0 ? thousands((user.metrics.followers / user.metrics.friends).toFixed(2)) : '-' || '-'}}</h3>
 							</v-flex>
-							<v-flex xs12>
-								<span>ADD TWEETS SCROLLER</span>
+							<v-flex class="mt-1">
+								<h3 class="caption grey--text">
+									ACT
+									<v-tooltip bottom class="tooltip-info">
+										<template v-slot:activator="{ on }">
+											<v-icon small v-on="on">mdi-information</v-icon>
+										</template>
+										<span>Actions per Day</span>
+									</v-tooltip>
+								</h3>
+								<h3>{{thousands(user.metrics.actions.toFixed()) || 0}}</h3>
 							</v-flex>
+						</v-layout>
+
+						<v-layout column class="mb-0">
+							<div>
+								<h3 class="caption grey--text">ENGAGEMENT</h3>
+								<v-flex xs12 id="chart" class="my-2">
+								</v-flex>
+							</div>
+							<div v-if="$store.state.isAuthenticated">
+								<h3 class="caption grey--text">SAMPLE TWEETS</h3>
+								<v-flex xs12 class="my-2">
+									<v-layout align-center justify-start row v-for="(tweet, index) in userSample" :key="tweet._source.id_str">
+										<v-flex>
+											<v-list-tile-avatar>
+												<img :src="tweet._source.user.profile_image_url_https">
+											</v-list-tile-avatar>
+										</v-flex>
+										<v-flex>
+											<v-list-tile-content class="">
+												<v-list-tile-title>@{{ tweet._source.user.screen_name }} &mdash; {{$moment(tweet._source.created_at).locale('el').format('LLL')}}</v-list-tile-title>
+												<p class="caption"><a :href="'https://twitter.com/' + tweet._source.user.screen_name + '/status/' + tweet._source.id_str" target="_blank" class="mb-1 grey--text">{{ tweet._source.full_text }}</a></p>
+											</v-list-tile-content>
+										</v-flex>
+										<v-divider v-if="index < 2"></v-divider>
+									</v-layout>
+								</v-flex>
+							</div>
 						</v-layout>
 					</v-card-text>
 
@@ -65,7 +120,7 @@
 							</v-list-tile-content>
 							<v-layout align-center justify-end>
 								<v-icon class="mr-1">mdi-graphql</v-icon>
-								<span class="caption">45</span>
+								<span class="caption">{{ userCount }}</span>
 							</v-layout>
 						</v-list-tile>
 					</v-card-actions>
@@ -76,42 +131,78 @@
 </template>
 
 <script>
+import { nodeColor, thousands } from '@/utils/utils';
 import Highcharts from 'highcharts';
+import { mapState } from 'vuex';
+
 export default {
 	name: 'user',
-	props: ['user'],
+	// props: ['user'],
 	data () {
 		return {
 			dialog: false,
 			chart: null,
-			userMetrics: []
+			userMetrics: [],
+			userSample: [],
+			userCount: 0
 		};
 	},
 	watch: {
-		user () {
-			this.$http(`${this.$BASE_API}/v2/metrics/user/${this.user.screen_name}/volume`)
-				.then((res) => {
-					this.userMetrics = res.data.data;
-					this.addChart();
-				});
+		selectedUser (v, o) {
+			console.log(v, o);
+			if (!v) return;
+			if (this.$store.state.isAuthenticated) {
+				this.loadSample();
+			}
+			this.loadCount();
+			this.loadMetrics();
+		},
+		userMetrics () {
+			this.addChart();
 		}
 	},
-	components: {
-		'classify': require('@/components/classify').default
-	},
 	computed: {
+		...mapState(['selectedUser']),
 		label () {
-			return this.user.metrics.dates < 120 ? 'NEW' : this.user.user_class;
+			if (!this.user) return '';
+			return this.user.metrics.dates < 120 ? 'NEW' : this.selectedUser.user_class;
 		},
 		score () {
-			return this.user.metrics.dates < 120 ? (1).toFixed(2) : this.user.user_class_score.toFixed(2);
+			if (!this.user) return 0;
+			return this.user.metrics.dates < 120 ? (1).toFixed(2) : this.selectedUser.user_class_score.toFixed(2);
+		},
+		user () {
+			return this.selectedUser;
 		}
 	},
 	mounted () {
 		this.addChart();
 	},
 	methods: {
+		loadSample () {
+			this.$http(`/v2/annotate?screen_name=${this.user.screen_name}&size=3`)
+				.then((res) => {
+					try {
+						this.userSample = res.data.data.hits.hits || [];
+					} catch (e) {
+						this.userSample = [];
+					}
+				});
+		},
+		loadMetrics () {
+			this.$http(`/v2/metrics/user/${this.user.screen_name}/volume`)
+				.then((res) => {
+					this.userMetrics = res.data.data;
+				});
+		},
+		loadCount () {
+			this.$http(`/v2/metrics/user/${this.user.screen_name}/count`)
+				.then((res) => {
+					this.userCount = res.data.data.value;
+				});
+		},
 		addChart () {
+			if (!this.user) return;
 			this.chart = Highcharts.chart('chart', {
 				animation: false,
 				chart: {
@@ -170,7 +261,9 @@ export default {
 					})
 				}]
 			});
-		}
+		},
+		nodeColor,
+		thousands
 	}
 };
 </script>
@@ -186,5 +279,8 @@ export default {
 .badge {
 	position: absolute;
 	bottom: 0;
+}
+.tooltip-info {
+	position: absolute;
 }
 </style>

@@ -6,14 +6,13 @@
 </template>
 
 <script>
-import Stats from 'stats-js';
-import { debounce } from '@/utils/utils';
-import ForceGraph3D from '3d-force-graph';
+import { nodeColor, linkColor, debounce } from '@/utils/utils';
+import ForceGraph3D from 'force-graph';
 import { forceCollide, scaleLinear } from 'd3';
-import { Group, SphereBufferGeometry, MeshPhongMaterial, Mesh } from 'three';
+import { mapState } from 'vuex';
 
 export default {
-	name: 'live-streamer',
+	name: 'live-streamer-2d',
 	props: ['stream', 'animate'],
 	data () {
 		return {
@@ -28,14 +27,12 @@ export default {
 			},
 			nodes: 0,
 			camera: null,
-			stats: {
-				enabled: false,
-				stats: null
-			}
+			MAX: 5,
+			NODES: 0
 		};
 	},
-	components: {
-		'user': require('@/components/user').default
+	computed: {
+		...mapState(['cachedGraph'])
 	},
 	watch: {
 		animate () {
@@ -54,7 +51,7 @@ export default {
 		}
 	},
 	mounted () {
-		this.socket = new WebSocket('ws://localhost:8000/v2/ws');
+		this.socket = new WebSocket(this.$SOCKET);
 
 		this.socket.onopen = this.onopen;
 		this.socket.onmessage = this.onmessage;
@@ -95,7 +92,7 @@ export default {
 					<span class="node-label"><span class="grey--text">@</span><span class="font-weight-bold">${t.screen_name}</span></span>
 				</div>
 				`,
-				color: this.nodeColor(t.user_class),
+				color: nodeColor(t.user_class),
 				avatar: t.profile_image_url_https,
 				type: type || 'tweet',
 				size: size,
@@ -129,7 +126,7 @@ export default {
 				links.push({
 					source: t.quoted_status.id,
 					target: t.id,
-					color: this.linkColor('quote')
+					color: linkColor('quote')
 				});
 			}
 			if (t.retweeted_status) {
@@ -140,7 +137,7 @@ export default {
 				links.push({
 					source: t.retweeted_status.id,
 					target: t.id,
-					color: this.linkColor('retweet')
+					color: linkColor('retweet')
 				});
 			}
 			return { nodes, links };
@@ -149,25 +146,19 @@ export default {
 			this.$parent.user = null;
 			if (this.graph) {
 				this.graph.graphData({ nodes: [], links: [] });
-				this.graph.renderer().forceContextLoss();
-				this.graph.scene = null;
-				this.graph.camera = null;
+				// this.graph.renderer().forceContextLoss();
+				// this.graph.scene = null;
+				// this.graph.camera = null;
 				this.graph = null;
 			}
 		},
 		handleResize () {
-			/*
-			if (this.graph.camera()) {
-				this.graph.camera().aspect = window.innerWidth / window.innerHeight;
-				this.graph.camera().updateProjectionMatrix();
-			}
-			if (this.graph.renderer()) {
-				this.graph.renderer().setSize(window.innerWidth, window.innerHeight);
-			}
 			if (this.graph) {
+				this.graph.width(window.innerWidth);
+				this.graph.height(window.innerHeight);
 				this.graph.refresh();
 			}
-			*/
+			/*
 			let needsRestart = this.stream;
 
 			if (this.graph) {
@@ -181,113 +172,75 @@ export default {
 					this.$parent.stream = true;
 				}
 			}
-		},
-		mesure () {
-			this.stats.stats.begin();
-			this.stats.stats.end();
-
-			requestAnimationFrame(this.mesure);
+			*/
 		},
 		draw () {
 			this.destroy();
-			if (this.stats.enabled) {
-				this.stats.stats = new Stats();
-				document.body.appendChild(this.stats.stats.dom);
-				requestAnimationFrame(this.mesure);
-			}
 
 			let canvas = document.getElementById('streamer');
 
-			this.graph = ForceGraph3D({
-				rendererConfig: {
-					antialias: true,
-					alpha: true,
-					powerPreference: 'high-performance',
-					precision: 'lowp'
-				}
-			})(canvas)
+			this.graph = ForceGraph3D()(canvas)
 				.nodeLabel('label')
+				.nodeRelSize(2.5)
 				.nodeId('id')
 				.nodeVal('size')
-				.nodeThreeObject(this.newSphere)
-				.enableNodeDrag(false)
+				.nodeColor('color')
 				.onNodeClick(node => {
-					this.$parent.user = node.t;
-					const distance = 350;
-					const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
-					this.graph.cameraPosition({
-						x: node.x * distRatio,
-						y: node.y * distRatio,
-						z: -node.z * distRatio
-					}, node, 750);
+					// console.log(this.$parent);
+					// this.$parent.user = node.t;
+					this.$store.commit('setSelectedUser', node.t);
 				})
 				.onNodeHover(node => {
 					canvas.style.cursor = node ? 'pointer' : null;
 				})
-				.linkOpacity(0.8)
-				.linkDirectionalParticles(1)
-        		.linkDirectionalParticleWidth(1)
-				.linkDirectionalParticleSpeed(0.06)
-				.linkWidth(0)
+				.nodeCanvasObject((node, ctx) => {
+					ctx.beginPath();
+					ctx.arc(node.x, node.y, node.size, 0, 2 * Math.PI, false);
+					ctx.fillStyle = node.color;
+					ctx.strokeStyle = 'white';
+					ctx.fill();
+					ctx.closePath();
+				})
+				.linkWidth(1)
 				.linkCurvature(0.02)
 				// .d3VelocityDecay(0.3)
 				// .warmupTicks(2)
 				// .cooldownTime(30000)
-				.showNavInfo(false)
-				.cameraPosition({ z: 2000 })
+				// .showNavInfo(false)
+				// .cameraPosition({ z: 2000 })
+				.enableNodeDrag(false)
 				.width(window.innerWidth)
 				.height(window.innerHeight)
 				.backgroundColor(this.backgroundColor)
-				.graphData(this.data);
-			/*
+				.graphData(this.cachedGraph).zoom(10);
+
 			this.graph.d3Force('collision', forceCollide(node => Math.cbrt(node.size) * 2));
 			this.graph.d3Force('link').distance((link) => {
 				return Math.ceil(link.source.size + link.target.size) * 2;
 			});
 			this.graph.d3Force('charge').strength(-36).theta(0.2);
-			*/
-			window.addEventListener('resize', this.handleResize, { passive: false });
-		},
 
-		newSphere (m) {
-			let scale = scaleLinear().domain([2, 16]).range([8, 24]);
-			let segments = Math.ceil(scale(m.size));
-			let sphere = new SphereBufferGeometry(m.size, segments, segments);
-			let sphereMaterial = new MeshPhongMaterial({
-				color: m.color,
-				reflectivity: 0.8
-			});
-			/*
-			let wireframe = new SphereBufferGeometry(m.size * 1.25, 8, 8);
-			let wireframeMaterial = new MeshBasicMaterial({
-				color: '#ffffff',
-				opacity: 0.5,
-				wireframe: true,
-				transparent: true
-			});
-			*/
-			let sphereMesh = new Mesh(sphere, sphereMaterial);
-			// let wireframeMesh = new Mesh(wireframe, wireframeMaterial);
-			var group = new Group();
-			group.add(sphereMesh);
-			// group.add(wireframeMesh);
-			return group;
+			window.addEventListener('resize', this.handleResize, { passive: false });
 		},
 		addNodes (data) {
 			if (!this.graph || !this.graph.graphData()) return;
 			let { nodes, links } = this.graph.graphData();
-			this.graph.graphData({
-				nodes: [...nodes, ...data.nodes],
-				links: [...links, ...data.links]
-			});
-		},
-		addNode (node) {
-			if (!this.graph || !this.graph.graphData()) return;
-			let { nodes, links } = this.graph.graphData();
-			this.graph.graphData({
-				nodes: [...nodes, node],
-				links: [...links]
-			});
+
+			if (this.NODES > this.MAX) {
+
+			} else {
+
+			}
+			try {
+				this.graph.graphData({
+					nodes: [...nodes, ...data.nodes],
+					links: [...links, ...data.links]
+				});
+			} catch (err) {
+				console.log(err);
+			}
+
+			this.NODES = nodes.length + data.nodes.length;
 		},
 		removeNode (node) {
 			if (!this.graph || !this.graph.graphData()) return;
@@ -304,58 +257,19 @@ export default {
 		resume () {
 			if (!this.graph || !this.graph.graphData()) return;
 			this.graph.resumeAnimation();
-			// Re-heat simulation
-			this.graph.numDimensions(3);
+			this.graph.refresh();
 		},
 		clear () {
 			this.graph.graphData({ nodes: [], links: [] });
 		},
 		recenter () {
 			if (!this.graph || !this.graph.graphData()) return;
-			this.graph.cameraPosition({
-				x: 0,
-				y: 0,
-				z: 2000
-			});
+			this.graph.centerAt(0, 0);
 		},
-		nodeColor (t) {
-			switch (t) {
-			case 'SUPER USER':
-			case 'INFLUENCER':
-				return '#76ff03';
-			case 'ACTIVE':
-			case 'NORMAL':
-				return '#00b0ff';
-			case 'AUTO':
-			case 'BOT':
-			case 'PARTIAL AUTO':
-				return '#ff1744';
-			case 'OTHER':
-			case 'UNKNOWN':
-				return '#757575';
-			case 'NEW':
-				return '#ffd600';
-			default:
-				return '#00b0ff';
-			}
-		},
-		linkColor (t) {
-			switch (t.toLowerCase()) {
-			case 'tweet':
-			case 'tweets':
-				return '#00b0ff';
-			case 'retweet':
-			case 'retweets':
-				return '#76ff03';
-			case 'quote':
-			case 'quotes':
-				return '#F4511E';
-			case 'reply':
-			case 'replies':
-				return '#19CF86';
-			default:
-				return '#cccccc';
-			}
+		saveGraph (cb) {
+			let { nodes, links } = this.graph.graphData();
+			this.$store.commit('saveGraph', { nodes, links });
+			return cb();
 		}
 	}
 };
@@ -371,11 +285,10 @@ export default {
 	background: #fafafa;
 	top: 0;
 	left: 0;
+}
 
-	background: #fafafa; /* Old browsers */
-	background: -moz-linear-gradient(#fafafa 0%, #fafafa 60%, #d0d0d0 100%);
-	background: -webkit-linear-gradient(#fafafa 0%, #fafafa 60%, #d0d0d0 100%);
-	background: linear-gradient(#fafafa 0%, #fafafa 60%, #d0d0d0 100%);
+.graph-tooltip {
+	background: none !important;
 }
 .node {
 	border: 2px solid white;
