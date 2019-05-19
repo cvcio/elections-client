@@ -138,7 +138,7 @@ export default {
 	},
 	methods: {
 		loadTweet () {
-			this.$http(`${this.$BASE_API}/v2/annotate`)
+			this.$http(`/v2/annotate`)
 				.then((res) => {
 					this.form = { accountType: '', politicalOrientation: '', context: '', note: '' };
 					this.tweet = {
@@ -159,7 +159,7 @@ export default {
 				return;
 			}
 
-			this.$http.post(`${this.$BASE_API}/v2/annotate`, {
+			this.$http.post(`/v2/annotate`, {
 				annotatorIdStr: this.$store.state.account.idStr,
 				annotatorScreenName: this.$store.state.account.screenName,
 				text: this.tweet.full_text,
