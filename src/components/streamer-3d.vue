@@ -197,7 +197,6 @@ export default {
 				.nodeThreeObject(this.newSphere)
 				.enableNodeDrag(false)
 				.onNodeClick(node => {
-					this.$store.commit('setSelectedUser', node.t);
 					const distance = 350;
 					const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
 					this.graph.cameraPosition({
@@ -208,6 +207,7 @@ export default {
 				})
 				.onNodeHover(node => {
 					canvas.style.cursor = node ? 'pointer' : null;
+					this.$store.commit('setSelectedUser', node.t);
 				})
 				.linkOpacity(0.8)
 				// .linkDirectionalParticles(1)

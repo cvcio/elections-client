@@ -188,10 +188,11 @@ export default {
 				.onNodeClick(node => {
 					// console.log(this.$parent);
 					// this.$parent.user = node.t;
-					this.$store.commit('setSelectedUser', node.t);
+
 				})
 				.onNodeHover(node => {
 					canvas.style.cursor = node ? 'pointer' : null;
+					this.$store.commit('setSelectedUser', node.t);
 				})
 				.nodeCanvasObject((node, ctx) => {
 					ctx.beginPath();
