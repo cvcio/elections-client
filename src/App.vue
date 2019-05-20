@@ -30,20 +30,20 @@
 			</div>
 			<div v-else>
 				<v-btn fab flat dark color="accent" small class="tour user-settings" to="/classifier">
-					<v-avatar class="grey mt-1" size="36">
+					<v-avatar class="grey" size="36">
 						<img :src="$store.state.account.profileImageURL" :alt="$store.state.account.firstName[0] + $store.state.account.lastName[0]"/>
 			    	</v-avatar>
 			    </v-btn>
 			</div>
 
-			<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" class="ma-0 pa-0">
+			<!--<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" class="ma-0 pa-0">
 				<input type="hidden" name="cmd" value="_s-xclick" />
 				<input type="hidden" name="hosted_button_id" value="88FQHKKEJ8WQA" />
 				<v-btn :large="$vuetify.breakpoint.mdAndUp" :round="$vuetify.breakpoint.mdAndUp" :fab="$vuetify.breakpoint.smAndDown" :small="$vuetify.breakpoint.smAndDown" light color="primary" type="submit">
 					<v-icon :left="$vuetify.breakpoint.mdAndUp" dark>mdi-paypal</v-icon>
 					<span v-if="$vuetify.breakpoint.mdAndUp">Donate</span>
 				</v-btn>
-			</form>
+			</form>-->
 		</v-toolbar>
 
 		<authorize ref="authorize" :urlParams="urlParams"></authorize>

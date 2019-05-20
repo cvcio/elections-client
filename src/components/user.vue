@@ -12,7 +12,7 @@
 									</v-btn>
 								</v-flex>
 							</v-layout>
-							<v-chip small class="badge mx-0 my-4" :color="nodeColor(label)" :dark="label !== 'NEW' && label !== 'INFLUENCER'" label>
+							<v-chip small v-if="$store.state.isAuthenticated" class="badge mx-0 my-4" :color="nodeColor(label)" :dark="label !== 'NEW' && label !== 'INFLUENCER'" label>
 								<span class="font-weight-bold">{{ label }}</span>
 								<span class="ml-1 font-weight-normal">{{ label !== 'NEW' ? (score*100).toFixed(2) + '%' : '' }}</span>
 							</v-chip>
@@ -23,7 +23,7 @@
 						<div>
 							<h3 class="headline mb-1">
 								{{ user.name }}
-								<v-chip small class="mx-0 my-0" label>
+								<v-chip v-if="$store.state.isAuthenticated" small class="mx-0 my-0" label>
 									<span class="font-weight-bold">{{ thousands(user.metrics.dates.toFixed()) }} ημέρ{{user.metrics.dates > 0 ? 'ες' : 'α'}} ενεργός</span>
 								</v-chip>
 							</h3>
@@ -80,13 +80,13 @@
 							</v-flex>
 						</v-layout>
 
-						<v-layout column class="mb-0">
+						<v-layout column class="mb-0" v-if="$store.state.isAuthenticated">
 							<div>
 								<h3 class="caption grey--text">ENGAGEMENT</h3>
 								<v-flex xs12 id="chart" class="my-2">
 								</v-flex>
 							</div>
-							<div v-if="$store.state.isAuthenticated">
+							<div>
 								<h3 class="caption grey--text">SAMPLE TWEETS</h3>
 								<v-flex xs12 class="my-2">
 									<v-layout align-center justify-start row v-for="(tweet, index) in userSample" :key="tweet._source.id_str">

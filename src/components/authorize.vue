@@ -15,7 +15,7 @@
 							<v-layout wrap>
 								<v-flex xs12>
 									<h4 class="">MediaWatch Ευρωεκλογές 2019 &mdash; Αίτημα πρόσβασης</h4>
-									<p class="my-3">Η συγκεκριμένη λειτουργία της πλατφόρμας απευθύνεται <strong>μόνο</strong> σε Δημοσιογράφους. Παρακαλούμε πριν συνεχίσετε βεβαιωθείτε ότι διαβάσατε τους <router-link to="/legal">Όρους Χρήσης</router-link> καθώς και τον <router-link to="/legal">Κώδικα Ηθικής</router-link> τους οποίους θα κληθείτε να αποδεχθείτε στο επόμενο στάδιο.</p>
+									<p class="my-3">Η συγκεκριμένη λειτουργία της πλατφόρμας απευθύνεται <strong>μόνο</strong> σε Δημοσιογράφους. Παρακαλούμε πριν συνεχίσετε βεβαιωθείτε ότι διαβάσατε τους <a href="/legal" target="_blank">Όρους Χρήσης</a> καθώς και τον <a href="/about" target="_blank">Κώδικα Δεοντολογίας / Πλαίσιο Συνεργασίας</a> τους οποίους θα κληθείτε να αποδεχθείτε στο επόμενο στάδιο.</p>
 									<div class="text-xs-center">
 										<v-btn color="#38A1F3" dark :href="this.$BASE_API + '/api/auth/twitter'">
 											<v-icon left dark>mdi-twitter</v-icon>
@@ -104,8 +104,7 @@
 												<div @click.stop="">
 													Αποδέχεστε τους
 													<a href="/legal" target="_blank">Όρους Χρήσης</a>
-													και τον
-													<a href="/legal" target="_blank">Κώδικα Ηθικής</a>?
+													<a href="/about" target="_blank">Κώδικα Δεοντολογίας / Πλαίσιο Συνεργασίας</a>?
 												</div>
 											</template>
 										</v-checkbox>
@@ -287,6 +286,7 @@ export default {
 							twitterAccessToken: res.data.data.twitterAccessToken
 						});
 						this.authorize = false;
+						this.step = 1;
 					});
 			}
 		},

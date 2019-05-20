@@ -31,16 +31,16 @@
 					<v-form ref="form">
 						<v-container grid-list-md>
 							<v-layout wrap class="my-2">
-								<p class="font-italic grey--text">Disclaimer: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas vehicula sem sed turpis aliquet, at mollis lorem facilisis. Maecenas rutrum justo sem, nec mollis ante accumsan id. Integer in ante quam. Mauris bibendum at lacus non mollis. Suspendisse potenti. Vivamus porta eleifend lacus, ac iaculis ex convallis quis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Ut at nisl tempor ante semper mollis ac et neque. Pellentesque nulla dui, aliquam ac efficitur quis, lobortis et enim. Quisque non venenatis nunc, vel dictum elit.</p>
-								<p class="my-1">Σας έχουμε αποστείλει τον 8ψήφιο κωδικό επιβεβαίωσης στο κινητό σας τηλέφωνο <strong>+{{form.mobile}}</strong>. Μη κλείσετε το συγκεκριμένο παράθυρο μέχρι η διαδικασία ολοκληρωθεί.</p>
+								<p class="font-italic grey--text">Οι αναφορές επιλέγονται τυχαία από τα δεδομένα που συλλέγουμε σε πραγματικό χρόνο χωρίς να αποκαλύπτουμε τα στοιχεία του συντάκτη καθώς και όσους στους οποίους αναφέρεται. Εμφανίζονται όμως τυχόν φωτογραφίες ή σύνδεσμοι που μοιράζονται στην αναφορά για τη διευκόλυσνή σας. Αποστολή του δημοσιογράφου είναι να χαρακτηρίσει την κάθε αναφορά σύμφωνα με δημοσιογραφικά κριτήρια.</p>
+								<p class="my-1">Ποιά ιδιότητα πιστεύετε πως έχει ο/η συντάκτης της συγκεκριμένης αναφοράς;</p>
 								<v-flex xs12 class="px-0">
-									<v-combobox v-model="form.accountType" :items="accountType" label="Τύπος Λογαριασμού" clearable chips small-chips deletable-chips>
+									<v-combobox v-model="form.accountType" :items="accountType" label="Ιδιότητα Χρήστη" clearable chips small-chips deletable-chips>
 									</v-combobox>
 								</v-flex>
 							</v-layout>
 
 							<v-layout wrap class="my-2">
-								<p class="my-1">Σας έχουμε αποστείλει τον 8ψήφιο κωδικό επιβεβαίωσης στο κινητό σας τηλέφωνο <strong>+{{form.mobile}}</strong>. Μη κλείσετε το συγκεκριμένο παράθυρο μέχρι η διαδικασία ολοκληρωθεί.</p>
+								<p class="my-1">Ποιός πιστεύετε ότι είναι ο πολιτικός προσανατολισμός του/της συντάκτη της συγκεκριμένης αναφοράς;</p>
 								<v-flex xs12 class="px-0">
 									<v-combobox v-model="form.politicalOrientation" :items="politicalOrientation" label="Πολιτικός Προσανατολισμός" clearable chips small-chips deletable-chips>
 									</v-combobox>
@@ -48,7 +48,7 @@
 							</v-layout>
 
 							<v-layout wrap class="my-2">
-								<p class="my-1">Σας έχουμε αποστείλει τον 8ψήφιο κωδικό επιβεβαίωσης στο κινητό σας τηλέφωνο <strong>+{{form.mobile}}</strong>. Μη κλείσετε το συγκεκριμένο παράθυρο μέχρι η διαδικασία ολοκληρωθεί.</p>
+								<p class="my-1">Πώς θα χαρακτηρίζατε το περιεχόμενο της συγκεκριμένης αναφοράς; Μπορεί να είναι παραπάνω από ένας (1) χαρακτηρισμός.</p>
 								<v-flex xs12 class="px-0">
 									<v-combobox v-model="form.context" :items="context" label="Περιεχόμενο" multiple clearable chips small-chips deletable-chips>
 									</v-combobox>
@@ -56,9 +56,9 @@
 							</v-layout>
 
 							<v-layout wrap class="my-2">
-								<p class="my-1">Σας έχουμε αποστείλει τον 8ψήφιο κωδικό επιβεβαίωσης στο κινητό σας τηλέφωνο <strong>+{{form.mobile}}</strong>. Μη κλείσετε το συγκεκριμένο παράθυρο μέχρι η διαδικασία ολοκληρωθεί.</p>
+								<p class="my-1">Αιτιολογήστε τις απαντήσεις σας (προαιρετικό).</p>
 								<v-flex xs12 class="px-0">
-									<v-textarea label="Αιτιολόγιση" v-model="form.note" counter="280" auto-grow required></v-textarea>
+									<v-textarea label="Αιτιολόγηση" v-model="form.note" counter="280" auto-grow required></v-textarea>
 								</v-flex>
 							</v-layout>
 
@@ -113,8 +113,8 @@ export default {
 				'Εξωκοινοβουλευτική Αριστερά',
 				'Αριστερά',
 				'Κεντροαριστερά',
-				'Κεντροδεξιά',
 				'Κέντρο',
+				'Κεντροδεξιά',
 				'Δεξιά',
 				'Ακροδεξιά',
 				'Δεν Γνωρίζω / Δεν Απαντώ',

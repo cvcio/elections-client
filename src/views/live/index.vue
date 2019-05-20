@@ -114,6 +114,9 @@ export default {
 			three: false
 		};
 	},
+	beforeRouteLeave (to, from, next) {
+		this.$refs.streamer.saveGraph(next);
+	},
 	components: {
 		'live-introduction': require('@/components/introduction').default,
 		'live-streamer-2d': require('@/components/streamer-2d').default,
