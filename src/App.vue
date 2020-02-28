@@ -25,6 +25,10 @@
 				<v-btn round color="accent" small class="tour user-settings mx-4 px-3" href="https://medium.com/cvcio/eu-elections-2019-4d7a75176ba9" target="_blank">
 					EU2019 Report
 				</v-btn>
+				<v-btn :large="$vuetify.breakpoint.mdAndUp" flat round light color="accent" :icon="$vuetify.breakpoint.smAndDown" @click="$refs.authorize.authorize = true">
+					<v-icon :left="$vuetify.breakpoint.mdAndUp" dark color="#38A1F3">mdi-twitter</v-icon>
+					<span v-if="$vuetify.breakpoint.mdAndUp">Αιτημα προσβασης</span>
+				</v-btn>
 			</div>
 			<div v-else>
 				<span class="grey--text">
