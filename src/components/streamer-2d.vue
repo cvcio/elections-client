@@ -1,14 +1,13 @@
 <template>
 	<v-flex>
 		<div class="ma-0 pa-0" id="streamer"></div>
-
 	</v-flex>
 </template>
 
 <script>
 import { nodeColor, linkColor, debounce } from '@/utils/utils';
 import ForceGraph3D from 'force-graph';
-import { forceCollide, scaleLinear } from 'd3';
+import { scaleLinear } from 'd3';
 import { mapState } from 'vuex';
 
 export default {
@@ -99,46 +98,50 @@ export default {
 				t
 			};
 		},
-		exists (node) {
+		existsNode (node) {
 			// eslint-disable-next-line
 			let { nodes, links } = this.graph.graphData();
 			return nodes.some(n => n.id === node);
 		},
-		countEdges (node) {
+		existsLink (node) {
 			// eslint-disable-next-line
 			let { nodes, links } = this.graph.graphData();
 			links = links.filter(l => l.source === node || l.target === node);
-			return links.length || 1;
+			return links.some(l => l.source === node || l.target === node);
 		},
 		getNetworkData (t) {
 			let nodes = [];
 			let links = [];
 
-			if (!this.exists(t.id)) {
+			if (!this.existsNode(t.id)) {
 				nodes.push(this.node(t));
 			}
 
 			if (t.quoted_status) {
-				if (!this.exists(t.quoted_status.id)) {
+				if (!this.existsNode(t.quoted_status.id)) {
 					nodes.push(this.node(t.quoted_status, 'quote'));
 				}
 
-				links.push({
-					source: t.quoted_status.id,
-					target: t.id,
-					color: linkColor('quote')
-				});
+				if (!this.existsLink(t.quoted_status.id)) {
+					links.push({
+						target: t.quoted_status.id,
+						source: t.id,
+						color: linkColor('quote')
+					});
+				}
 			}
 			if (t.retweeted_status) {
-				if (!this.exists(t.retweeted_status.id)) {
+				if (!this.existsNode(t.retweeted_status.id)) {
 					nodes.push(this.node(t.retweeted_status, 'retweet'));
 				}
 
-				links.push({
-					source: t.retweeted_status.id,
-					target: t.id,
-					color: linkColor('retweet')
-				});
+				if (!this.existsLink(t.retweeted_status.id)) {
+					links.push({
+						target: t.retweeted_status.id,
+						source: t.id,
+						color: linkColor('retweet')
+					});
+				}
 			}
 			return { nodes, links };
 		},
@@ -188,11 +191,10 @@ export default {
 				.onNodeClick(node => {
 					// console.log(this.$parent);
 					// this.$parent.user = node.t;
-
+					this.$store.commit('setSelectedUser', node.t);
 				})
 				.onNodeHover(node => {
 					canvas.style.cursor = node ? 'pointer' : null;
-					this.$store.commit('setSelectedUser', node.t);
 				})
 				.nodeCanvasObject((node, ctx) => {
 					ctx.beginPath();
@@ -203,23 +205,32 @@ export default {
 					ctx.closePath();
 				})
 				.linkWidth(1)
-				.linkCurvature(0.02)
-				// .d3VelocityDecay(0.3)
+				// .linkCurvature(0.02)
+				.d3VelocityDecay(0.5)
 				// .warmupTicks(2)
 				// .cooldownTime(30000)
 				// .showNavInfo(false)
 				// .cameraPosition({ z: 2000 })
+
+				// .d3AlphaDecay(0.3)
+				// .d3VelocityDecay(0.5)
+				.linkSource('source')
+				.linkTarget('target')
+				// .d3Force('charge', () => -30)
+
+				.linkDirectionalArrowLength(2)
+
 				.enableNodeDrag(false)
 				.width(window.innerWidth)
 				.height(window.innerHeight)
 				.backgroundColor(this.backgroundColor)
 				.graphData(this.cachedGraph).zoom(10);
 
-			this.graph.d3Force('collision', forceCollide(node => Math.cbrt(node.size) * 2));
+			// this.graph.d3Force('collision', forceCollide(node => Math.cbrt(node.size) * 2));
 			this.graph.d3Force('link').distance((link) => {
 				return Math.ceil(link.source.size + link.target.size) * 2;
 			});
-			this.graph.d3Force('charge').strength(-36).theta(0.2);
+			this.graph.d3Force('charge').strength(-8);
 
 			window.addEventListener('resize', this.handleResize, { passive: false });
 		},

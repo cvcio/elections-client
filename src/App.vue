@@ -11,8 +11,7 @@
 				</router-link>
 			</v-toolbar-title>
 			<v-divider inset vertical class="mx-3" v-if="$vuetify.breakpoint.mdAndUp"></v-divider>
-			<span class="subheading font-weight-bold mt-1" v-if="$vuetify.breakpoint.mdAndUp">Ευρωεκλογές 2019</span>
-			<span class="subheading font-weight-bold mt-1 ml-1" v-else>EU2019</span>
+			<span class="subheading font-weight-bold mt-1">Εκλογές 2019</span>
 
 			<v-spacer></v-spacer>
 
@@ -23,33 +22,42 @@
 						<v-icon :right="$vuetify.breakpoint.mdAndUp" small>mdi-help-circle</v-icon>
 					</v-btn>
 				</span>
-				<v-btn :large="$vuetify.breakpoint.mdAndUp" flat round light color="accent" :icon="$vuetify.breakpoint.smAndDown" @click="$refs.authorize.authorize = true">
-					<v-icon :left="$vuetify.breakpoint.mdAndUp" dark color="#38A1F3">mdi-twitter</v-icon>
-					<span v-if="$vuetify.breakpoint.mdAndUp">Αιτημα προσβασης</span>
+				<v-btn round color="accent" small class="tour user-settings mx-4 px-3" href="https://medium.com/cvcio/eu-elections-2019-4d7a75176ba9" target="_blank">
+					EU2019 Report
 				</v-btn>
 			</div>
 			<div v-else>
-				<v-btn fab flat dark color="accent" small class="tour user-settings" to="/classifier">
-					<v-avatar class="grey" size="36">
-						<img :src="$store.state.account.profileImageURL" :alt="$store.state.account.firstName[0] + $store.state.account.lastName[0]"/>
-			    	</v-avatar>
-			    </v-btn>
+				<span class="grey--text">
+					<v-btn round color="accent" small class="tour user-settings mx-4 px-3" href="https://medium.com/cvcio/eu-elections-2019-4d7a75176ba9" target="_blank">
+						EU2019 Report
+				    </v-btn>
+					<span class="caption" v-if="$vuetify.breakpoint.mdAndUp">Περιοχή Σχολιασμού</span>
+					<v-btn fab flat dark color="accent" small class="tour user-settings" to="/classifier">
+						<v-avatar class="grey" size="36">
+							<img :src="$store.state.account.profileImageURL" :alt="$store.state.account.firstName[0] + $store.state.account.lastName[0]"/>
+				    	</v-avatar>
+				    </v-btn>
+
+					<v-btn flat small color="grey" icon @click="logout">
+						<v-icon small>mdi-logout</v-icon>
+					</v-btn>
+				</span>
 			</div>
 
-			<!--<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" class="ma-0 pa-0">
+			<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" class="ma-0 pa-0">
 				<input type="hidden" name="cmd" value="_s-xclick" />
-				<input type="hidden" name="hosted_button_id" value="88FQHKKEJ8WQA" />
+				<input type="hidden" name="hosted_button_id" value="BLQB4GV8422AN" />
 				<v-btn :large="$vuetify.breakpoint.mdAndUp" :round="$vuetify.breakpoint.mdAndUp" :fab="$vuetify.breakpoint.smAndDown" :small="$vuetify.breakpoint.smAndDown" light color="primary" type="submit">
 					<v-icon :left="$vuetify.breakpoint.mdAndUp" dark>mdi-paypal</v-icon>
 					<span v-if="$vuetify.breakpoint.mdAndUp">Donate</span>
 				</v-btn>
-			</form>-->
+			</form>
 		</v-toolbar>
 
 		<authorize ref="authorize" :urlParams="urlParams"></authorize>
 
 		<v-content app>
-			<v-container fluid fill-height class="rel">
+			<v-container fluid fill-height class="rel pa-0">
 				<v-layout row wrap>
 					<v-flex xs12>
 						<v-scroll-y-transition mode="out-in">
@@ -87,6 +95,15 @@ export default {
 		urlParams () {
 			return window.location.search;
 		}
+	},
+	methods: {
+		logout () {
+			window.localStorage.removeItem('authorization');
+			window.localStorage.removeItem('account');
+			window.localStorage.removeItem('intro');
+
+			window.location = '/';
+		}
 	}
 };
 </script>
@@ -96,8 +113,12 @@ html, body {
 	overflow: auto !important;
 }
 html, body, #app {
-	background-color: #fafafa;
+	background-color: #ffffff;
 	font-family: 'Roboto', Arial, sans-serif;
+}
+
+.container.grid-list-xl {
+	max-width: 1264px;
 }
 
 a {

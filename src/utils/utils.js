@@ -98,7 +98,7 @@ const linkColor = (t) => {
 		return '#F4511E';
 	case 'reply':
 	case 'replies':
-		return '#19CF86';
+		return '#cccccc';
 	default:
 		return '#cccccc';
 	}

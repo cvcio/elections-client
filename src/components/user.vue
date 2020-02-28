@@ -12,7 +12,7 @@
 									</v-btn>
 								</v-flex>
 							</v-layout>
-							<v-chip small v-if="$store.state.isAuthenticated" class="badge mx-0 my-4" :color="nodeColor(label)" :dark="label !== 'NEW' && label !== 'INFLUENCER'" label>
+							<v-chip small class="badge mx-0 my-4" :color="nodeColor(label)" :dark="label !== 'NEW' && label !== 'INFLUENCER'" label>
 								<span class="font-weight-bold">{{ label }}</span>
 								<span class="ml-1 font-weight-normal">{{ label !== 'NEW' ? (score*100).toFixed(2) + '%' : '' }}</span>
 							</v-chip>
@@ -23,7 +23,7 @@
 						<div>
 							<h3 class="headline mb-1">
 								{{ user.name }}
-								<v-chip v-if="$store.state.isAuthenticated" small class="mx-0 my-0" label>
+								<v-chip small class="mx-0 my-0" label>
 									<span class="font-weight-bold">{{ thousands(user.metrics.dates.toFixed()) }} ημέρ{{user.metrics.dates > 0 ? 'ες' : 'α'}} ενεργός</span>
 								</v-chip>
 							</h3>
@@ -80,7 +80,7 @@
 							</v-flex>
 						</v-layout>
 
-						<v-layout column class="mb-0" v-if="$store.state.isAuthenticated">
+						<v-layout column class="mb-0">
 							<div>
 								<h3 class="caption grey--text">ENGAGEMENT</h3>
 								<v-flex xs12 id="chart" class="my-2">
@@ -118,10 +118,17 @@
 									<a class="black--text" :href="'https://twitter.com/' + user.screen_name" target="_blank"><span class="grey--text">@</span><span class="font-weight-bold">{{ user.screen_name }}</span></a>
 								</v-list-tile-title>
 							</v-list-tile-content>
-							<v-layout align-center justify-end>
-								<v-icon class="mr-1">mdi-graphql</v-icon>
-								<span class="caption">{{ userCount }}</span>
-							</v-layout>
+
+								<v-tooltip bottom>
+									<template v-slot:activator="{ on }">
+										<v-layout align-center justify-end v-on="on">
+										<v-icon class="mr-1">mdi-graphql</v-icon>
+										<span class="caption">{{ userCount }}</span>
+										</v-layout>
+									</template>
+									<span>Αριθμός Συνδέσεων / Αναφορών στο συγκεκριμένο δείγμα</span>
+								</v-tooltip>
+
 						</v-list-tile>
 					</v-card-actions>
 				</v-card>
@@ -151,9 +158,7 @@ export default {
 		selectedUser (v, o) {
 			console.log(v, o);
 			if (!v) return;
-			if (this.$store.state.isAuthenticated) {
-				this.loadSample();
-			}
+			this.loadSample();
 			this.loadCount();
 			this.loadMetrics();
 		},
@@ -225,11 +230,7 @@ export default {
 				},
 
 				xAxis: {
-					type: 'datetime',
-					dateTimeLabelFormats: {
-						hour: '%H:%M',
-						day: '%DD/%mm'
-					}
+					type: 'datetime'
 				},
 
 				yAxis: {

@@ -100,46 +100,50 @@ export default {
 				t
 			};
 		},
-		exists (node) {
+		existsNode (node) {
 			// eslint-disable-next-line
 			let { nodes, links } = this.graph.graphData();
 			return nodes.some(n => n.id === node);
 		},
-		countEdges (node) {
+		existsLink (node) {
 			// eslint-disable-next-line
 			let { nodes, links } = this.graph.graphData();
 			links = links.filter(l => l.source === node || l.target === node);
-			return links.length || 1;
+			return links.some(l => l.source === node || l.target === node);
 		},
 		getNetworkData (t) {
 			let nodes = [];
 			let links = [];
 
-			if (!this.exists(t.id)) {
+			if (!this.existsNode(t.id)) {
 				nodes.push(this.node(t));
 			}
 
 			if (t.quoted_status) {
-				if (!this.exists(t.quoted_status.id)) {
+				if (!this.existsNode(t.quoted_status.id)) {
 					nodes.push(this.node(t.quoted_status, 'quote'));
 				}
 
-				links.push({
-					source: t.quoted_status.id,
-					target: t.id,
-					color: linkColor('quote')
-				});
+				if (!this.existsLink(t.quoted_status.id)) {
+					links.push({
+						target: t.quoted_status.id,
+						source: t.id,
+						color: linkColor('quote')
+					});
+				}
 			}
 			if (t.retweeted_status) {
-				if (!this.exists(t.retweeted_status.id)) {
+				if (!this.existsNode(t.retweeted_status.id)) {
 					nodes.push(this.node(t.retweeted_status, 'retweet'));
 				}
 
-				links.push({
-					source: t.retweeted_status.id,
-					target: t.id,
-					color: linkColor('retweet')
-				});
+				if (!this.existsLink(t.retweeted_status.id)) {
+					links.push({
+						target: t.retweeted_status.id,
+						source: t.id,
+						color: linkColor('retweet')
+					});
+				}
 			}
 			return { nodes, links };
 		},
@@ -197,6 +201,7 @@ export default {
 				.nodeThreeObject(this.newSphere)
 				.enableNodeDrag(false)
 				.onNodeClick(node => {
+					this.$store.commit('setSelectedUser', node.t);
 					const distance = 350;
 					const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
 					this.graph.cameraPosition({
@@ -207,13 +212,14 @@ export default {
 				})
 				.onNodeHover(node => {
 					canvas.style.cursor = node ? 'pointer' : null;
-					this.$store.commit('setSelectedUser', node.t);
 				})
 				.linkOpacity(0.8)
+				.linkSource('source')
+				.linkTarget('target')
 				// .linkDirectionalParticles(1)
         		// .linkDirectionalParticleWidth(1)
 				// .linkDirectionalParticleSpeed(0.06)
-				.linkWidth(0)
+				.linkWidth(4)
 				.linkCurvature(0.02)
 				// .d3VelocityDecay(0.3)
 				// .warmupTicks(2)

@@ -8,6 +8,74 @@
 
 			<user id="user" v-if="!$store.state.isIntro" class="mt-0"></user>
 
+			<v-flex align-center justify-center>
+			<v-card color="" v-if="legend" class="legend" width="380px">
+				<v-flex class="text-xs-right ma-2">
+					<v-btn fab small class="ma-0 elevation-1" @click="legend = false">
+						<v-icon>mdi-close</v-icon>
+					</v-btn>
+				</v-flex>
+				<v-card-title primary-title>
+					<h3>Τί είναι αυτό που βλέπω;</h3>
+				</v-card-title>
+				<v-card-text class="">
+					<v-layout row>
+						<v-flex xs12>
+							<p class="caption">Το γράφημα ή ο γράφος περιγράφει πως διαδίδεται ένα tweet - αναφορά για να διαμορφώσει πληροφορίες και ως εκ τούτου να επηρεάσει την κοινή γνώμη.</p>
+							<p class="caption">Οι χρήστες ταξινομούνται σύμφωνα με συγκεκριμενα χαρακτηριστικά: αριθμός Followers, Following, Statuses, Favourites, Public Lists, Followers / Following, Statuses / Favourites και κάνοντας χρήση αυτοματοποιημένων διαδικασιών / αλγορίθμων.</p>
+							<p class="caption">Το μέγεθος κάθε κόμβου εξαρτάται από τον αριθμό των διαδράσεων ανα ημέρα, ενώ χρώματιζεται ανάλογα από τον χαρακτηρισμό που του έχει δοθεί αυτόματα από τον αλγόριθμο. Τελος το χρώμα το δεσμού εξαρτάται από τον τύπο της διάδρασης: <span class="retweet">Retweet</span>, <span class="quote">Quote</span>.</p>
+							<p class="caption">Μπορείτε να χρησιμοποιήσετε το ποντίκι σας για να κάνετε zoom-in, zoom-out και να μετακινήσετε το γράφημα.</p>
+						</v-flex>
+					</v-layout>
+					<v-layout row>
+						<v-flex>
+							<v-icon size="4" color="grey">mdi-checkbox-blank-circle</v-icon>
+							<v-icon size="12" color="grey">mdi-checkbox-blank-circle</v-icon>
+							<v-icon size="24" color="grey">mdi-checkbox-blank-circle</v-icon>
+							<span class="ml-1" style="position:relative;top:-4px;">ACTIONS / DAY</span>
+						</v-flex>
+						<v-flex>
+							<v-tooltip top>
+								<template v-slot:activator="{ on }">
+									<v-icon size="24" :color="nodeColor('INFLUENCER')" v-on="on">mdi-checkbox-blank-circle</v-icon>
+								</template>
+								<span>INFLUENCER</span>
+							</v-tooltip>
+
+							<v-tooltip top>
+								<template v-slot:activator="{ on }">
+									<v-icon size="24" :color="nodeColor('ACTIVE')" v-on="on">mdi-checkbox-blank-circle</v-icon>
+								</template>
+								<span>ACTIVE</span>
+							</v-tooltip>
+
+							<v-tooltip top>
+								<template v-slot:activator="{ on }">
+									<v-icon size="24" :color="nodeColor('AMPLIFIER')" v-on="on">mdi-checkbox-blank-circle</v-icon>
+								</template>
+								<span>AMPLIFIER</span>
+							</v-tooltip>
+
+							<v-tooltip top>
+								<template v-slot:activator="{ on }">
+									<v-icon size="24" :color="nodeColor('NEW')" v-on="on">mdi-checkbox-blank-circle</v-icon>
+								</template>
+								<span>NEW</span>
+							</v-tooltip>
+
+							<v-tooltip top>
+								<template v-slot:activator="{ on }">
+									<v-icon size="24" :color="nodeColor('UNKNOWN')" v-on="on">mdi-checkbox-blank-circle</v-icon>
+								</template>
+								<span>UNKNOWN</span>
+							</v-tooltip>
+							<span class="ml-1" style="position:relative;top:-4px;">LABEL</span>
+						</v-flex>
+					</v-layout>
+			</v-card-text>
+	        </v-card>
+		</v-flex>
+
 			<v-layout class="view-actions pa-0 ma-0" v-if="!$store.state.isIntro" column fill-height align-center justify-center>
 				<v-tooltip left>
 					<template v-slot:activator="{ on }">
@@ -61,7 +129,7 @@
 							dark
 							small
 							class="mx-2" v-on="on">
-							<v-icon>mdi-camera-control</v-icon>
+							<v-icon>mdi-image-filter-center-focus</v-icon>
 						</v-btn>
 					</template>
 					<span>Reset Camera Position</span>
@@ -95,12 +163,29 @@
 					</template>
 					<span>Clear Network</span>
 				</v-tooltip>
+				<v-divider class="short-divider my-3 grey lighten-1"></v-divider>
+				<v-tooltip left>
+					<template v-slot:activator="{ on }">
+						<v-btn
+							class="mx-2"
+							dark
+							fab
+							small
+							color="secondary"
+							@click="legend = true"  v-on="on">
+						  <v-icon>mdi-information</v-icon>
+						</v-btn>
+					</template>
+					<span>Open Legend</span>
+				</v-tooltip>
 			</v-layout>
 		</v-layout>
 	</v-container>
 </template>
 
 <script>
+import { nodeColor, linkColor } from '@/utils/utils';
+
 export default {
 	name: 'live',
 	data () {
@@ -111,7 +196,8 @@ export default {
 			fullscreen: false,
 			animate: true,
 			user: null,
-			three: false
+			three: false,
+			legend: true
 		};
 	},
 	beforeRouteLeave (to, from, next) {
@@ -128,7 +214,9 @@ export default {
 			this.$refs.streamer.saveGraph(() => {
 				this.three = !this.three;
 			});
-		}
+		},
+		linkColor,
+		nodeColor
 	}
 };
 </script>
@@ -150,5 +238,21 @@ export default {
 	background: -moz-linear-gradient(#fafafa 0%, #fafafa 60%, #d0d0d0 100%);
 	background: -webkit-linear-gradient(#fafafa 0%, #fafafa 60%, #d0d0d0 100%);
 	background: linear-gradient(#fafafa 0%, #fafafa 60%, #d0d0d0 100%);
+}
+.legend {
+	position: absolute;
+	bottom: 48px;
+	right: 24px;
+	margin-bottom: -72px;
+	z-index: 2;
+	// position: relative;
+	// top: 50%;
+	// transform: translate(0, -50%);
+}
+.retweet {
+	color: #76ff03;
+}
+.quote {
+	color: #F4511E;
 }
 </style>
