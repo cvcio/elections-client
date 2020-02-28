@@ -1,7 +1,7 @@
 <template>
 	<v-container grid-list-xl fill-height>
 		<v-layout align-center justify-center>
-			<v-flex xs12 md8 lg4>
+			<v-flex xs12 md6>
 				<v-card class="" color="#00acee" dark max-width="400">
 					<v-img
 						v-if="tweet.media && tweet.media.length > 0"
@@ -26,7 +26,7 @@
 					</v-card-text>
 				</v-card>
 			</v-flex>
-			<v-flex xs12 md8 lg4>
+			<v-flex xs12 md6>
 				<v-card flat class="pa-5 elevation-0">
 					<v-form ref="form">
 						<v-container grid-list-md>
