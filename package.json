@@ -15,7 +15,7 @@
     "force-graph": "^1.15.0",
     "highcharts": "^7.1.1",
     "lodash": "^4.17.15",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "register-service-worker": "^1.6.2",
     "three": "^0.104.0",
     "vue": "^2.6.10",
